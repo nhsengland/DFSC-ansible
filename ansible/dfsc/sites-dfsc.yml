@@ -1,0 +1,108 @@
+---
+- hosts: webservers
+  sudo: yes
+
+  tasks:
+
+  - name: install packages
+    apt: name={{ item }} update_cache=yes state=latest
+    with_items:
+      - git
+      - makepasswd     
+
+  - name: install composer
+    shell: curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+    args:
+      creates: /usr/local/bin/composer
+
+  - name: Creates directory
+    file: path=/var/www/dfsc state=directory
+
+  - name: Clone git repository
+    git: >
+      dest=/var/www/dfsc
+      repo=https://github.com/Intelligent-Health/DSFC-Portal.git
+      update=no
+
+  - name: composer create-project
+    composer: command=create-project working_dir=/var/www/dfsc optimize_autoloader=no
+    become: yes
+    become_user: root
+
+  - name: Create env file
+    file: path=/var/www/dfsc/.env state=touch owner=www-data group=www-data mode=0600
+    become: yes
+    become_user: root
+
+  - name: set APP_DEBUG=false
+    lineinfile: dest=/var/www/dfsc/.env regexp='^APP_DEBUG=' line=APP_DEBUG=false
+
+  - name: set APP_ENV=production
+    lineinfile: dest=/var/www/dfsc/.env regexp='^APP_ENV=' line=APP_ENV=production
+
+  - name: set DB_DATABASE
+    lineinfile: dest=/var/www/dfsc/.env regexp='^DB_DATABASE=' line=DB_DATABASE=dfsc
+
+  - name: set DB_USERNAME
+    lineinfile: dest=/var/www/dfsc/.env regexp='^DB_USERNAME=' line=DB_USERNAME=dfsc
+
+  - name: Generate DB password
+    shell: makepasswd --chars=32
+    args:
+      creates: /var/www/dfsc/.dbpw
+    register: dbpwd
+
+  - name: set DB_PASSWORD
+    lineinfile: dest=/var/www/dfsc/.env regexp='^DB_PASSWORD=' line=DB_PASSWORD={{ dbpwd.stdout }}
+    when: dbpwd.changed
+
+  - name: Save dbpw file
+    lineinfile: dest=/var/www/dfsc/.dbpw line="{{ dbpwd.stdout }}" create=yes state=present
+    become: yes
+    become_user: root
+    when: dbpwd.changed
+
+  - name: project change owner
+    file: dest=/var/www/dfsc owner=www-data group=www-data mode=0644 recurse=yes
+    become: yes
+    become_user: root
+  - name: Create MySQL DB
+    mysql_db: name=dfsc state=present
+
+  - name: Create MySQL User
+    mysql_user: name=dfsc password={{ dbpwd.stdout }} priv=dfsc.*:ALL state=present
+    when: dbpwd.changed
+
+ 
+  - name: Run artisan clear-compiled
+    shell: php /var/www/dfsc/artisan clear-compiled
+    become: yes  
+    when: dbpwd.changed
+
+  - name: Run artisan optimize
+    shell: php /var/www/dfsc/artisan optimize
+    become: yes 
+    when: dbpwd.changed
+
+
+  - name: Run artisan plain
+    shell: php /var/www/dfsc/artisan
+    become: yes 
+    when: dbpwd.changed
+  
+  - name: Run artisan key generate
+    shell: php /var/www/dfsc/artisan key:generate
+    become: yes 
+    when: dbpwd.changed
+
+
+  - name: Run artisan migrate
+    shell: php /var/www/dfsc/artisan migrate --force
+    become: yes
+ 
+  handlers:
+   - name: restart php5-fpm
+     service: name=php5-fpm state=restarted
+
+   - name: restart nginx
+     service: name=nginx state=restarted
