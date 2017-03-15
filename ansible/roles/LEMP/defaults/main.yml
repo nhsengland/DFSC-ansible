@@ -12,19 +12,24 @@ ubuntu_mysql_pkgs:
   - libmysqlclient-dev
 
 ubuntu_php_pkgs:
-  - php5-fpm
-  - php5-cgi
-  - php5-cli
-  - php5-curl
-  - php5-json
-  - php5-odbc
-  - php5-tidy
-  - php5-common
-  - php5-xmlrpc
-  - php5-gd
+  - php5.6
+  - php5.6-fpm
+  - php5.6-cgi
+  - php5.6-cli
+  - php5.6-curl
+  - php5.6-json
+  - php5.6-odbc
+  - php5.6-tidy
+  - php5.6-common
+  - php5.6-xmlrpc
+  - php5.6-gd
   - php-pear
-  - php5-dev
-  - php5-imap
-  - php5-mcrypt
-  - php5-mysqlnd
+  - php5.6-dev
+  - php5.6-imap
+  - php5.6-mcrypt
+  - php5.6-mysqlnd
+  - php5.6-mbstring
+  - php5.6-xml
+  
+
 
