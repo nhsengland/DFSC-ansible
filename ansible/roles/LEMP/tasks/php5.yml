@@ -4,7 +4,7 @@
     repo: 'ppa:ondrej/php'
     state: present
 
-- name: Install PHP5-FPM
+- name: Install PHP5.6-FPM
   apt:
     name: "{{ item }}"
     state: latest
