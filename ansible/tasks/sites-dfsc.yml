@@ -39,13 +39,19 @@
 
   - name: set DB_USERNAME
     lineinfile: dest=/var/www/dfsc/.env regexp='^DB_USERNAME=' line=DB_USERNAME=dfsc
+  
+  - name: set PROXY_SCHEMA
+    lineinfile: dest=/var/www/dfsc/.env regexp='^PROXY_SCHEMA=' line=PROXY_SCHEMA={{ proxy_schema }}
 
+  - name: set PROXY_URL
+    lineinfile: dest=/var/www/dfsc/.env regexp='^PROXY_URL=' line=PROXY_URL={{ proxy_url }}
+  
   - name: Generate DB password
     shell: makepasswd --chars=32
     args:
       creates: /var/www/dfsc/.dbpw
     register: dbpwd
-	
+
   - name: Generate API KEY
     shell: makepasswd --chars=32
     args:
