@@ -1,0 +1,29 @@
+---
+
+
+- hosts: webservers
+  become: yes
+  gather_facts: yes
+
+  vars:
+    proxy_url: http://ec2-52-210-15-160.eu-west-1.compute.amazonaws.com/referencelibrary
+    proxy_schema: http
+
+  pre_tasks:
+    - shell: echo 'hello to dfsc'
+
+  roles:
+    - LEMP
+
+  tasks:
+    - include: tasks/sites-dfsc.yml
+
+  post_tasks:
+    - shell: echo 'cheers'
+
+  handlers:
+   - name: restart php5-fpm
+     service: name=php5-fpm state=restarted
+
+   - name: restart nginx
+     service: name=nginx state=restarted

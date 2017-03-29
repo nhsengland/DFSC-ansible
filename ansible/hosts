@@ -18,7 +18,8 @@
 # Ex 2: A collection of hosts belonging to the 'webservers' group
 
 [webservers]
-ansible2 ansible_ssh_host=178.62.112.64
+Your server
+
 
 ## alpha.example.org
 ## beta.example.org
@@ -33,7 +34,7 @@ ansible2 ansible_ssh_host=178.62.112.64
 # Ex 3: A collection of database servers in the 'dbservers' group
 
 ## [dbservers]
-## 
+##
 ## db01.intranet.mydomain.net
 ## db02.intranet.mydomain.net
 ## 10.25.1.56
@@ -43,4 +44,3 @@ ansible2 ansible_ssh_host=178.62.112.64
 # leading 0s:
 
 ## db-[99:101]-node.example.com
-

@@ -2,7 +2,7 @@
     apt: name={{ item }} update_cache=yes state=latest
     with_items:
       - git
-      - makepasswd     
+      - makepasswd
 
   - name: install composer
     shell: curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
@@ -15,7 +15,7 @@
   - name: Clone git repository
     git: >
       dest=/var/www/dfsc
-      repo=https://github.com/Intelligent-Health/DSFC-Portal.git
+      repo=https://github.com/nhsengland/DSFC-Portal.git
       update=no
 
   - name: composer create-project
@@ -39,13 +39,13 @@
 
   - name: set DB_USERNAME
     lineinfile: dest=/var/www/dfsc/.env regexp='^DB_USERNAME=' line=DB_USERNAME=dfsc
-  
+
   - name: set PROXY_SCHEMA
     lineinfile: dest=/var/www/dfsc/.env regexp='^PROXY_SCHEMA=' line=PROXY_SCHEMA={{ proxy_schema }}
 
   - name: set PROXY_URL
     lineinfile: dest=/var/www/dfsc/.env regexp='^PROXY_URL=' line=PROXY_URL={{ proxy_url }}
-  
+
   - name: Generate DB password
     shell: makepasswd --chars=32
     args:
@@ -84,33 +84,33 @@
     mysql_user: name=dfsc password={{ dbpwd.stdout }} priv=dfsc.*:ALL state=present
     when: dbpwd.changed
 
- 
+
   - name: Run artisan clear-compiled
     shell: php /var/www/dfsc/artisan clear-compiled
-    become: yes  
+    become: yes
     when: dbpwd.changed
 
   - name: Run artisan optimize
     shell: php /var/www/dfsc/artisan optimize
-    become: yes 
+    become: yes
     when: dbpwd.changed
 
 
   - name: Run artisan plain
     shell: php /var/www/dfsc/artisan
-    become: yes 
+    become: yes
     when: dbpwd.changed
-  
+
   - name: Run artisan migrate
     shell: php /var/www/dfsc/artisan migrate:refresh --seed --force
     become: yes
- 
+
   - name: project change owner
     file: dest=/var/www/dfsc owner=www-data group=www-data mode=0755 recurse=yes
     become: yes
     become_user: root
     notify:
       - restart nginx
-  
+
   - name: create symobolic link for phpmyadmin
     file: src=/usr/share/phpmyadmin dest=/var/www/dfsc/public/phpmyadmin state=link

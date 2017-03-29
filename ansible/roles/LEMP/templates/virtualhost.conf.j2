@@ -1,9 +1,9 @@
 server {
              listen 80;
              server_name {{ server_name }};
-               
+
              root /var/www/dfsc/public;
-             
+
              access_log  /var/log/nginx/{{ server_name }}_access.log;
              error_log  /var/log/nginx/{{ server_name }}_error.log;
 
