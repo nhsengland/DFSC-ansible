@@ -27,3 +27,10 @@
 
    - name: restart nginx
      service: name=nginx state=restarted
+
+- name: configure backup scripts
+  sudo: yes
+  user: ubuntu
+  hosts: dbservers
+  roles:
+    - backup

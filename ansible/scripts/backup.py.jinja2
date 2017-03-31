@@ -1,0 +1,59 @@
+#!/usr/bin/env python
+import subprocess
+import os
+import socket
+from datetime import datetime
+import shutil
+import upload
+import requests
+
+
+def send_email(subject, text):
+    return requests.post(
+        "{{ SUPPORT_EMAIL_END_POINT }}",
+        auth=("api", "{{ SUPPORT_EMAIL_API_KEY }}"),
+        data={
+            "from": "{{ SUPPORT_EMAIL_FROM }}",
+            "to": ["{{ SUPPORT_EMAIL_TO }}"],
+            "subject": subject,
+            "text": text
+        }
+    )
+
+
+def backup():
+    try:
+        hostname = socket.gethostname()
+        user_home = os.path.expanduser("~")
+        date = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        file_name = "{0}-{1}.tgz".format(date, hostname)
+        backup_dir = os.path.join(user_home, "backup")
+        backup_target = os.path.join(user_home, file_name)
+
+        if os.path.exists(backup_dir):
+            shutil.rmtree(backup_dir)
+        print 'makeing {}'.format(backup_dir)
+        os.makedirs(backup_dir)
+
+        sql_dump = os.path.join(backup_dir, "mysql_dump.sql")
+        mysql_dump_cmd = "mysqldump --opt --user=root --password={{ MYSQL_ROOT_PASS }} --all-databases > {}".format(sql_dump)
+        print 'running {}'.format(mysql_dump_cmd)
+        subprocess.check_call(mysql_dump_cmd, shell=True)
+
+        for f in os.listdir(user_home):
+            if f.endswith("tgz"):
+                os.remove(os.path.join(user_home, f))
+
+        print "tar-ing data"
+        tar_cmd = "tar cfz {0} backup".format(backup_target)
+        print tar_cmd
+        subprocess.check_call(tar_cmd, shell=True)
+        print "uploading data"
+        upload.upload(backup_target)
+    except Exception as es:
+        print "errorred with {}".format(str(es))
+        send_email("Issue with the reference library back up", str(es))
+
+
+if __name__ == '__main__':
+    backup()

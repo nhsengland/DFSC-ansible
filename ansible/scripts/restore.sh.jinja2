@@ -1,0 +1,29 @@
+#!/bin/sh
+
+# This scrip downloads a backup tgz of a mysql database dump
+# It then restores the db
+
+# Set some useful variables.
+USER_HOME=$(eval echo ~${SUDO_USER})
+
+# Download from S3
+cd $USER_HOME
+python download.py $1
+
+# Untar/gunzip it
+rm -rf restored
+mkdir restored
+mv "backup-$1.tgz" restored/
+cd restored
+tar xfvz "backup-$1.tgz"
+cd ..
+
+# Kick some services in an appropriate way so restore isn't blocked.
+sudo service nginx stop
+sudo service mysql restart
+
+# Restore the databases.
+mysql --user=root --password={{ MYSQL_ROOT_PASS }} < restored/backup/mysql_dump.sql
+
+# Restart Apache
+sudo service nginx start

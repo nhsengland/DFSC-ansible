@@ -18,7 +18,7 @@
 # Ex 2: A collection of hosts belonging to the 'webservers' group
 
 [webservers]
-Your server
+ec2-52-214-34-232.eu-west-1.compute.amazonaws.com
 
 
 ## alpha.example.org
@@ -33,7 +33,8 @@ Your server
 
 # Ex 3: A collection of database servers in the 'dbservers' group
 
-## [dbservers]
+[dbservers]
+ec2-52-214-34-232.eu-west-1.compute.amazonaws.com
 ##
 ## db01.intranet.mydomain.net
 ## db02.intranet.mydomain.net
